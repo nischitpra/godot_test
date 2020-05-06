@@ -40,4 +40,4 @@ tree_root = SubResource( 6 )
 anim_player = NodePath("../AnimationPlayer")
 active = true
 parameters/jump_blend/active = false
-parameters/move_blend/blend_amount = 1.0
+parameters/move_blend/blend_amount = 0.0
