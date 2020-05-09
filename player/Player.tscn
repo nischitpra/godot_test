@@ -1,31 +1,30 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://player/PlayerController.gd" type="Script" id=1]
 [ext_resource path="res://player/characterAnimations.tscn" type="PackedScene" id=2]
 
-[sub_resource type="CubeMesh" id=2]
-
-[sub_resource type="CapsuleShape" id=1]
-radius = 0.47317
-height = 2.62388
+[sub_resource type="CapsuleShape" id=2]
+radius = 0.63262
+height = 1.95425
 
 [node name="Player" type="KinematicBody"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.76113, 0 )
 script = ExtResource( 1 )
 
-[node name="gun" type="MeshInstance" parent="."]
-transform = Transform( 0.16624, 0, 0, 0, 0.777088, -2.68198e-08, 0, -1.47516e-07, -0.128361, 0.00785118, 0.805592, -1.3709 )
-mesh = SubResource( 2 )
-material/0 = null
+[node name="Character Model" type="Spatial" parent="."]
 
-[node name="pivot" type="Spatial" parent="."]
+[node name="Player Model" parent="Character Model" instance=ExtResource( 2 )]
 
-[node name="Camera" type="Camera" parent="pivot"]
-transform = Transform( -1, -3.14485e-07, -8.5273e-08, -8.32486e-09, 0.286274, -0.958148, 3.25735e-07, -0.958148, -0.286274, 0, -2.825, -2.802 )
+[node name="CameraBase" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0 )
 
-[node name="characterAnimations" parent="." instance=ExtResource( 2 )]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 0, 0 )
+[node name="CameraRot" type="Spatial" parent="CameraBase"]
+
+[node name="SpringArm" type="SpringArm" parent="CameraBase/CameraRot"]
+transform = Transform( -1, 1.11444e-07, -3.06191e-07, 0, 0.939693, 0.34202, 3.25841e-07, 0.34202, -0.939693, 0, 0, 0 )
+spring_length = 2.4
+
+[node name="Camera" type="Camera" parent="CameraBase/CameraRot/SpringArm"]
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, -0.884497 )
-shape = SubResource( 1 )
+transform = Transform( 0.5, 0, 0, 0, -8.14603e-08, 0.5, 0, -0.5, -8.14603e-08, 0, 0.93, 0 )
+shape = SubResource( 2 )

@@ -1,98 +1,69 @@
 extends KinematicBody
 
-const GRAVITY := -5
-const JUMP_SPEED := 2
-const SPEED := 1
-const SPRINT_SPEED := 2
-const ACCELERATION := 5
-const DE_ACCELERATION := 10
-const MOUSE_SENSITIVITY := 0.1
+const MOTION_INTERPOLATE_SPEED = 10
+const JUMP_SPEED = 6
 
-var move_direction := Vector3.ZERO
-var input_direction := Vector3.ZERO
-var velocity := Vector3.ZERO
-var is_sprinting := false
+const CAMERA_MOUSE_ROTATION_SPEED = 0.001
+const CAMERA_CONTROLLER_ROTATION_SPEED = 3.0
+const CAMERA_X_ROT_MIN = -40
+const CAMERA_X_ROT_MAX = 30
 
-onready var pivot := $pivot
-onready var gun := $gun
-onready var camera := $pivot/Camera
-onready var animation_tree := $characterAnimations/AnimationTree
+onready var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * ProjectSettings.get_setting("physics/3d/default_gravity_vector")
+onready var animation_tree = $"Character Model/Player Model/AnimationTree"
+onready var camera_base := $CameraBase
+onready var camera_rot := $CameraBase/CameraRot
+onready var camera := $CameraBase/CameraRot/SpringArm/Camera
+onready var character_model := $"Character Model"
+
+var camera_x_rot := 0.0
+var aiming := false
+
+var orientation = Transform()
+var root_motion = Transform()
+var velocity = Vector3()
+var motion = Vector2()
+
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 
-func _input(event):
-	if event is InputEventMouseMotion:
-		var rotationY = deg2rad(-event.relative.x*MOUSE_SENSITIVITY)
-		var rotationX = deg2rad(event.relative.y*MOUSE_SENSITIVITY)
-		rotate_y(rotationY)
-		pivot.rotate_x(rotationX)
-		gun.rotate_x(rotationX)
-		var clampedRotationX =  clamp(pivot.rotation.x,deg2rad(-35),deg2rad(45))		
-		pivot.rotation.x = clampedRotationX
-		gun.rotation.x = clampedRotationX
-
-
 func _physics_process(delta):
-	_process_input(delta)
-	_process_movement(delta)
-
-
-func _process_input(_delta):
-	_resetVariables()
-	var camera_transform = camera.get_global_transform()
-# player strafing
-	if Input.is_action_pressed("move_fw"):
-		input_direction.z += 1
-	if Input.is_action_pressed("move_bw"):
-		input_direction.z += -1
-	if Input.is_action_pressed("move_l"):
-		input_direction.x += -1
-	if Input.is_action_pressed("move_r"):
-		input_direction.x += 1
-	input_direction = input_direction.normalized()
-	move_direction += -camera_transform.basis.z*input_direction.z
-	move_direction += camera_transform.basis.x*input_direction.x
+	var motion_target = Vector2(Input.get_action_strength("move_r") - Input.get_action_strength("move_l"), 
+								Input.get_action_strength("move_bw") - Input.get_action_strength("move_fw"))
+	motion = motion.linear_interpolate(motion_target, MOTION_INTERPOLATE_SPEED * delta)
 	
-# for springing
-	is_sprinting = true if Input.is_action_pressed("move_sprint") else false 
-	
-# for jumping
-#	if Input.is_action_just_pressed("move_j") and is_on_floor():
-	if Input.is_action_just_pressed("move_j"):
+	# jump
+	if is_on_floor() and Input.is_action_just_pressed("move_j"):
 		velocity.y = JUMP_SPEED
 		animation_tree.set("parameters/jump_blend/active", 1.0)
+	
+	root_motion = animation_tree.get_root_motion_transform()
+	orientation *= root_motion
+	
+	var h_velocity = orientation.origin / delta
+	velocity.x = h_velocity.x
+	velocity.z = h_velocity.z
+	velocity += gravity * delta
+	velocity = move_and_slide(velocity, Vector3.UP)
+	
+	orientation.origin = Vector3() # Clear accumulated root motion displacement (was applied to speed).
+	orientation = orientation.orthonormalized() # Orthonormalize orientation.
+	
+	character_model.global_transform.basis = orientation.basis
 
 
-func _process_movement(delta):
-	velocity.y += delta * GRAVITY
-	
-	var speed = SPRINT_SPEED if is_sprinting else SPEED
-	var new_pos = move_direction * speed
-	var acc = DE_ACCELERATION
-	var hv = velocity
-	hv.y = 0
-	# if movement is in the current velocity direction then accelerate
-	if(move_direction.dot(hv)>0):
-		acc = ACCELERATION
-	
-	hv = hv.linear_interpolate(new_pos, acc*delta)
-	
-	velocity.x = hv.x
-	velocity.z = hv.z
-	
-	velocity = move_and_slide(velocity,Vector3.UP,true)
-	
-	var anim_blend_amount = velocity.length() / speed
-	# play animation
-	animation_tree.set("parameters/move_blend/blend_amount", anim_blend_amount)
+func _input(event):
+	if event is InputEventMouseMotion:
+		var camera_frame_speed = CAMERA_MOUSE_ROTATION_SPEED
+		if aiming:
+			camera_frame_speed *= 0.75
+		_rotate_camera(event.relative * camera_frame_speed)
 
 
-func _resetVariables():
-	input_direction.x=0
-	input_direction.y=0
-	input_direction.z=0
-	move_direction.x = 0
-	move_direction.y = 0
-	move_direction.z = 0
+func _rotate_camera(move):
+	camera_base.rotate_y(-move.x)
+	camera_base.orthonormalize()
+	camera_x_rot += move.y
+	camera_x_rot = clamp(camera_x_rot, deg2rad(CAMERA_X_ROT_MIN), deg2rad(CAMERA_X_ROT_MAX))
+	camera_rot.rotation.x = camera_x_rot
