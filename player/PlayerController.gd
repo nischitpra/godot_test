@@ -1,6 +1,7 @@
 extends KinematicBody
 
 const MOTION_INTERPOLATE_SPEED = 10
+const ROTATION_INTERPOLATE_SPEED = 10
 const JUMP_SPEED = 6
 
 const CAMERA_MOUSE_ROTATION_SPEED = 0.001
@@ -9,7 +10,7 @@ const CAMERA_X_ROT_MIN = -40
 const CAMERA_X_ROT_MAX = 30
 
 onready var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * ProjectSettings.get_setting("physics/3d/default_gravity_vector")
-onready var animation_tree = $"Character Model/Player Model/AnimationTree"
+onready var animation_tree = $"Character Model/root_motion_player/AnimationTree"
 onready var camera_base := $CameraBase
 onready var camera_rot := $CameraBase/CameraRot
 onready var camera := $CameraBase/CameraRot/SpringArm/Camera
@@ -29,9 +30,21 @@ func _ready():
 
 
 func _physics_process(delta):
+	# movement
+	var sprint = Input.get_action_strength("move_sprint")
 	var motion_target = Vector2(Input.get_action_strength("move_r") - Input.get_action_strength("move_l"), 
 								Input.get_action_strength("move_bw") - Input.get_action_strength("move_fw"))
 	motion = motion.linear_interpolate(motion_target, MOTION_INTERPOLATE_SPEED * delta)
+	var camera_x = camera_rot.global_transform.basis.x
+	var camera_z = camera_rot.global_transform.basis.z
+	var target = camera_x * motion.x + camera_z * motion.y
+	if target.length() > 0.001:
+		var q_from = orientation.basis.get_rotation_quat()
+		var q_to = Transform().looking_at(target, Vector3.UP).basis.get_rotation_quat()
+		# Interpolate current rotation with desired one.
+		orientation.basis = Basis(q_from.slerp(q_to, delta * ROTATION_INTERPOLATE_SPEED))
+	
+	animation_tree.set("parameters/move_blend/blend_amount", motion.length() - 1 + sprint)
 	
 	# jump
 	if is_on_floor() and Input.is_action_just_pressed("move_j"):
@@ -47,9 +60,11 @@ func _physics_process(delta):
 	velocity += gravity * delta
 	velocity = move_and_slide(velocity, Vector3.UP)
 	
+#	print(velocity)
+	
 	orientation.origin = Vector3() # Clear accumulated root motion displacement (was applied to speed).
 	orientation = orientation.orthonormalized() # Orthonormalize orientation.
-	
+#
 	character_model.global_transform.basis = orientation.basis
 
 
