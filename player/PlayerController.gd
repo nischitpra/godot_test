@@ -44,7 +44,10 @@ func _physics_process(delta):
 		# Interpolate current rotation with desired one.
 		orientation.basis = Basis(q_from.slerp(q_to, delta * ROTATION_INTERPOLATE_SPEED))
 	
-	animation_tree.set("parameters/move_blend/blend_amount", motion.length() - 1 + sprint)
+	var motion_length = motion.length()
+	animation_tree.set(
+		"parameters/move_blend/blend_amount", motion_length - 1 + motion_length * sprint
+	)
 	
 	# jump
 	if is_on_floor() and Input.is_action_just_pressed("move_j"):
