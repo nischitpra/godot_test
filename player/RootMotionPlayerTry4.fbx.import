@@ -2,12 +2,12 @@
 
 importer="scene"
 type="PackedScene"
-path="res://.import/root_motion_player.fbx-c7d3be664561eec6306ccc26eef77cca.scn"
+path="res://.import/RootMotionPlayerTry4.fbx-c184eb613928a2855e0a70cba3aabd18.scn"
 
 [deps]
 
-source_file="res://player/root_motion_player.fbx"
-dest_files=[ "res://.import/root_motion_player.fbx-c7d3be664561eec6306ccc26eef77cca.scn" ]
+source_file="res://player/RootMotionPlayerTry4.fbx"
+dest_files=[ "res://.import/RootMotionPlayerTry4.fbx-c184eb613928a2855e0a70cba3aabd18.scn" ]
 
 [params]
 

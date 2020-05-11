@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://player/PlayerController.gd" type="Script" id=1]
-[ext_resource path="res://player/root_motion_player.tscn" type="PackedScene" id=2]
+[ext_resource path="res://player/RootMotionPlayerTry4.tscn" type="PackedScene" id=2]
 
 [sub_resource type="CapsuleShape" id=1]
 radius = 0.63262
@@ -12,7 +12,7 @@ script = ExtResource( 1 )
 
 [node name="Character Model" type="Spatial" parent="."]
 
-[node name="root_motion_player" parent="Character Model" instance=ExtResource( 2 )]
+[node name="RootMotionPlayerTry4" parent="Character Model" instance=ExtResource( 2 )]
 
 [node name="CameraBase" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0 )

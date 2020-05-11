@@ -10,7 +10,7 @@ const CAMERA_X_ROT_MIN = -40
 const CAMERA_X_ROT_MAX = 30
 
 onready var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * ProjectSettings.get_setting("physics/3d/default_gravity_vector")
-onready var animation_tree = $"Character Model/root_motion_player/AnimationTree"
+onready var animation_tree = $"Character Model/RootMotionPlayerTry4/AnimationTree"
 onready var camera_base := $CameraBase
 onready var camera_rot := $CameraBase/CameraRot
 onready var camera := $CameraBase/CameraRot/SpringArm/Camera
