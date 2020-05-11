@@ -2,7 +2,7 @@ extends KinematicBody
 
 const MOTION_INTERPOLATE_SPEED = 10
 const ROTATION_INTERPOLATE_SPEED = 10
-const JUMP_SPEED = 6
+const JUMP_SPEED = 5
 
 const CAMERA_MOUSE_ROTATION_SPEED = 0.001
 const CAMERA_CONTROLLER_ROTATION_SPEED = 3.0
@@ -34,6 +34,8 @@ func _physics_process(delta):
 	var sprint = Input.get_action_strength("move_sprint")
 	var motion_target = Vector2(Input.get_action_strength("move_r") - Input.get_action_strength("move_l"), 
 								Input.get_action_strength("move_bw") - Input.get_action_strength("move_fw"))
+	motion_target.x += motion_target.x*sprint
+	motion_target.y += motion_target.y*sprint
 	motion = motion.linear_interpolate(motion_target, MOTION_INTERPOLATE_SPEED * delta)
 	var camera_x = camera_rot.global_transform.basis.x
 	var camera_z = camera_rot.global_transform.basis.z
@@ -44,10 +46,9 @@ func _physics_process(delta):
 		# Interpolate current rotation with desired one.
 		orientation.basis = Basis(q_from.slerp(q_to, delta * ROTATION_INTERPOLATE_SPEED))
 	
-	var motion_length = motion.length()
-	animation_tree.set(
-		"parameters/move_blend/blend_amount", motion_length - 1 + motion_length * sprint
-	)
+	var motion_length = motion.length()/2
+	print(motion_length)	
+	animation_tree.set("parameters/move_blend/blend_position", motion_length)
 	
 	# jump
 	if is_on_floor() and Input.is_action_just_pressed("move_j"):
