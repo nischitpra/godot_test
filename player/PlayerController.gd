@@ -47,7 +47,6 @@ func _physics_process(delta):
 		orientation.basis = Basis(q_from.slerp(q_to, delta * ROTATION_INTERPOLATE_SPEED))
 	
 	var motion_length = motion.length()/2
-	print(motion_length)	
 	animation_tree.set("parameters/move_blend/blend_position", motion_length)
 	
 	# jump
