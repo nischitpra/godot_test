@@ -43,7 +43,7 @@ func _physics_process(delta):
 	if target.length() > 0.001:
 		var q_from = orientation.basis.get_rotation_quat()
 		var q_to = Transform().looking_at(target, Vector3.UP).basis.get_rotation_quat()
-		# Interpolate current rotation with desired one.
+#       Interpolate current rotation with desired one.
 		orientation.basis = Basis(q_from.slerp(q_to, delta * ROTATION_INTERPOLATE_SPEED))
 	
 	var motion_length = motion.length()/2
@@ -63,12 +63,11 @@ func _physics_process(delta):
 	velocity += gravity * delta
 	velocity = move_and_slide(velocity, Vector3.UP)
 	
-#	print(velocity)
-	
+#	make player rotate to moving direction	
 	orientation.origin = Vector3() # Clear accumulated root motion displacement (was applied to speed).
 	orientation = orientation.orthonormalized() # Orthonormalize orientation.
-#
-	character_model.global_transform.basis = orientation.basis
+	character_model.global_transform.basis.x = orientation.basis.x
+	character_model.global_transform.basis.z = orientation.basis.z
 
 
 func _input(event):
