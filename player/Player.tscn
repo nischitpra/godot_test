@@ -14,6 +14,15 @@ script = ExtResource( 1 )
 
 [node name="RootMotionPlayerTry5" parent="Character Model" instance=ExtResource( 2 )]
 
+[node name="FrontRayCast" type="RayCast" parent="Character Model"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.24427, 0.0728832 )
+enabled = true
+cast_to = Vector3( 0, 0, 0.5 )
+
+[node name="LedgeRayCast" type="RayCast" parent="Character Model"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.24565, 0.417934 )
+enabled = true
+
 [node name="CameraBase" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0 )
 

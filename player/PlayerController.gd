@@ -16,6 +16,8 @@ onready var camera_base := $CameraBase
 onready var camera_rot := $CameraBase/CameraRot
 onready var camera := $CameraBase/CameraRot/SpringArm/Camera
 onready var character_model := $"Character Model"
+onready var front_ray_cast := $"Character Model/FrontRayCast"
+onready var ledge_ray_cast := $"Character Model/LedgeRayCast"
 
 var camera_x_rot := 0.0
 var aiming := false
@@ -25,6 +27,8 @@ var root_motion = Transform()
 var velocity = Vector3()
 var motion = Vector2()
 var crouch_motion := 0.0 
+
+var is_hanging := false
 
 
 func _ready():
@@ -63,16 +67,31 @@ func _physics_process(delta):
 	# jump
 	if is_on_floor() and Input.is_action_just_pressed("move_j"):
 		velocity.y = JUMP_SPEED
+		var is_wall_infront = front_ray_cast.is_colliding()
+		print(is_wall_infront)
+		# select jump animation
+		animation_tree.set("parameters/jump_selector/blend_position", is_wall_infront)
+		# play jump animation
 		animation_tree.set("parameters/jump_blend/active", 1.0)
 	
+	if not is_on_floor() and ledge_ray_cast.is_colliding():
+		is_hanging = true
+	else:
+		is_hanging = false
+		
+	print(is_hanging)
+	
+	# process movement
 	root_motion = animation_tree.get_root_motion_transform()
 	orientation *= root_motion
 	
 	var h_velocity = orientation.origin / delta
-	velocity.x = h_velocity.x
-	velocity.z = h_velocity.z
-	velocity += gravity * delta
-	velocity = move_and_slide(velocity, Vector3.UP)
+	#todo: need to optimize this
+	if !is_hanging:
+		velocity.x = h_velocity.x
+		velocity.z = h_velocity.z
+		velocity += gravity * delta
+		velocity = move_and_slide(velocity, Vector3.UP)
 	
 #	make player rotate to moving direction	
 	orientation.origin = Vector3() # Clear accumulated root motion displacement (was applied to speed).
