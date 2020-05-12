@@ -17,4 +17,4 @@ environment = SubResource( 1 )
 [node name="WallClimbing" parent="." instance=ExtResource( 1 )]
 
 [node name="Player" parent="." instance=ExtResource( 3 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.604829, 0 )
+transform = Transform( -0.976323, 0, 0.21632, 0, 1, 0, -0.21632, 0, -0.976323, -0.724342, -0.17314, -0.396634 )
