@@ -1,5 +1,6 @@
 extends KinematicBody
 
+const CROUCH_INTERPOLATE_SPEED = 5
 const MOTION_INTERPOLATE_SPEED = 10
 const ROTATION_INTERPOLATE_SPEED = 10
 const JUMP_SPEED = 5
@@ -10,7 +11,7 @@ const CAMERA_X_ROT_MIN = -40
 const CAMERA_X_ROT_MAX = 30
 
 onready var gravity = ProjectSettings.get_setting("physics/3d/default_gravity") * ProjectSettings.get_setting("physics/3d/default_gravity_vector")
-onready var animation_tree = $"Character Model/RootMotionPlayerTry4/AnimationTree"
+onready var animation_tree = $"Character Model/RootMotionPlayerTry5/AnimationTree"
 onready var camera_base := $CameraBase
 onready var camera_rot := $CameraBase/CameraRot
 onready var camera := $CameraBase/CameraRot/SpringArm/Camera
@@ -23,6 +24,7 @@ var orientation = Transform()
 var root_motion = Transform()
 var velocity = Vector3()
 var motion = Vector2()
+var crouch_motion := 0.0 
 
 
 func _ready():
@@ -31,6 +33,7 @@ func _ready():
 
 func _physics_process(delta):
 	# movement
+	var crouch = Input.get_action_strength("move_crouch")
 	var sprint = Input.get_action_strength("move_sprint")
 	var motion_target = Vector2(Input.get_action_strength("move_r") - Input.get_action_strength("move_l"), 
 								Input.get_action_strength("move_bw") - Input.get_action_strength("move_fw"))
@@ -46,9 +49,17 @@ func _physics_process(delta):
 #       Interpolate current rotation with desired one.
 		orientation.basis = Basis(q_from.slerp(q_to, delta * ROTATION_INTERPOLATE_SPEED))
 	
+	# crouch
 	var motion_length = motion.length()/2
-	animation_tree.set("parameters/move_blend/blend_position", motion_length)
-	
+	animation_tree.set("parameters/stand_crouch_blend/blend_amount", crouch_motion)
+	if crouch:
+		crouch_motion+=CROUCH_INTERPOLATE_SPEED*delta
+		animation_tree.set("parameters/crouch_move_blend/blend_position", motion_length)
+	else:
+		# apply movement blend
+		crouch_motion-=CROUCH_INTERPOLATE_SPEED*delta
+		animation_tree.set("parameters/move_blend/blend_position", motion_length)
+	crouch_motion = clamp(crouch_motion,0,1)
 	# jump
 	if is_on_floor() and Input.is_action_just_pressed("move_j"):
 		velocity.y = JUMP_SPEED
